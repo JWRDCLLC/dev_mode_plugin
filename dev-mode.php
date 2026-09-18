@@ -4,7 +4,7 @@
  * Plugin Name: Dev Mode
  * Plugin URI: https://www.pestcontrolexperts.com
  * Description: Dashboard widget with debug toggles, dev plugin controls, site snapshot, and environment detection
- * Version: 1.0.2
+ * Version: 2.0.0
  * Author: Josh Robbs
  * Requires PHP: 8.2
  * Text Domain: dev-mode
@@ -13,6 +13,8 @@
 declare(strict_types=1);
 
 namespace DevMode;
+
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
@@ -27,3 +29,11 @@ if (file_exists($autoloader)) {
 
 // Bootstrap the plugin
 Bootstrap::init(__FILE__);
+
+// Self-update from GitHub
+$updateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/JWRDCLLC/dev_mode_plugin',
+    __FILE__,
+    'dev-mode-plugin'
+);
+$updateChecker->setBranch('master');

@@ -16,6 +16,8 @@ class SettingsPage
     private const PAGE_SLUG = 'dev-mode-settings';
     private const NONCE_ACTION = 'dev_mode_save_settings';
 
+    public static ?string $hookSuffix = null;
+
     /**
      * Register the settings page
      *
@@ -34,7 +36,7 @@ class SettingsPage
      */
     public static function addMenuPage(): void
     {
-        add_options_page(
+        self::$hookSuffix = add_options_page(
             'Dev Mode Settings',
             'Dev Mode',
             'manage_options',
@@ -144,6 +146,9 @@ class SettingsPage
                        Adjust the selection and click Save to begin.</p>
                 </div>
             <?php endif; ?>
+
+            <h2>Dev Mode Widget</h2>
+            <?php DashboardWidget::renderWidget(); ?>
 
             <form method="post">
                 <?php wp_nonce_field(self::NONCE_ACTION); ?>
