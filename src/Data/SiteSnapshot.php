@@ -29,6 +29,7 @@ class SiteSnapshot
             'Memory Limit' => WP_MEMORY_LIMIT,
             'Max Memory Limit' => defined('WP_MAX_MEMORY_LIMIT') ? WP_MAX_MEMORY_LIMIT : 'Not set',
             'Debug Mode' => defined('WP_DEBUG') && WP_DEBUG ? 'Enabled' : 'Disabled',
+            'WP Cron' => defined('DISABLE_WP_CRON') && DISABLE_WP_CRON ? 'Disabled' : 'Enabled',
             'Site URL' => get_site_url(),
             'Home URL' => get_home_url(),
         ];

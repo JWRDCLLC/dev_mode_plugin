@@ -170,5 +170,49 @@ class SiteSnapshotTest extends TestCase
         $this->assertArrayHasKey('PHP Version', $result);
         $this->assertArrayHasKey('MariaDB Version', $result);
         $this->assertArrayHasKey('Active Theme', $result);
+        $this->assertArrayHasKey('WP Cron', $result);
+    }
+
+    public function testCollectReportsWpCronEnabledByDefault(): void
+    {
+        Functions\when('get_bloginfo')->justReturn('6.0');
+        Functions\when('get_site_url')->justReturn('https://example.com');
+        Functions\when('get_home_url')->justReturn('https://example.com');
+        Functions\when('get_option')->justReturn([]);
+        Functions\when('is_multisite')->justReturn(false);
+
+        $mockTheme = new class
+        {
+            public function get($key)
+            {
+                return $key === 'Name' ? 'Test Theme' : '';
+            }
+
+            public function parent()
+            {
+                return null;
+            }
+        };
+        Functions\when('wp_get_theme')->justReturn($mockTheme);
+
+        // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+        $GLOBALS['wpdb'] = new class
+        {
+            // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+            public function db_version()
+            {
+                return '10.11.14';
+            }
+
+            // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+            public function db_server_info()
+            {
+                return '10.11.14-MariaDB';
+            }
+        };
+
+        $result = SiteSnapshot::collect();
+
+        $this->assertEquals('Enabled', $result['WP Cron']);
     }
 }
