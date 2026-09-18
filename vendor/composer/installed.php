@@ -3,7 +3,7 @@
         'name' => 'pce/dev-mode-plugin',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '9a07d05c0b49b3e9397b8fb6a5967ee139a5c16f',
+        'reference' => '83033fa68ad684e4bafb8e44b03410924d287cd2',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'pce/dev-mode-plugin' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '9a07d05c0b49b3e9397b8fb6a5967ee139a5c16f',
+            'reference' => '83033fa68ad684e4bafb8e44b03410924d287cd2',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
