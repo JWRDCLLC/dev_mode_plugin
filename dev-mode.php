@@ -30,10 +30,9 @@ if (file_exists($autoloader)) {
 // Bootstrap the plugin
 Bootstrap::init(__FILE__);
 
-// Self-update from GitHub
-$updateChecker = PucFactory::buildUpdateChecker(
-    'https://github.com/JWRDCLLC/dev_mode_plugin',
+// Self-update via self-hosted JSON metadata (published as a release asset by the release workflow)
+PucFactory::buildUpdateChecker(
+    'https://github.com/JWRDCLLC/dev_mode_plugin/releases/latest/download/details.json',
     __FILE__,
     'dev-mode-plugin'
 );
-$updateChecker->setBranch('master');
