@@ -51,7 +51,7 @@ class DashboardWidget
      */
     public static function enqueueAssets(string $hook): void
     {
-        if ($hook !== 'index.php') {
+        if ($hook !== 'index.php' && $hook !== SettingsPage::$hookSuffix) {
             return;
         }
 
