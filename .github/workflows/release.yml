@@ -1,9 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -12,8 +11,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout tag
+      - name: Checkout release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -27,11 +28,12 @@ jobs:
       - name: Resolve and verify version
         id: version
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${{ github.event.release.tag_name }}"
+          TAG_VERSION="${TAG_VERSION#v}"
           FILE_VERSION=$(grep -oP '^\s*\*\s*Version:\s*\K.+' dev-mode.php | tr -d '[:space:]')
 
           if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match dev-mode.php Version header ($FILE_VERSION)."
+            echo "::error::Release tag version ($TAG_VERSION) does not match dev-mode.php Version header ($FILE_VERSION)."
             exit 1
           fi
 
@@ -49,7 +51,7 @@ jobs:
 
       - name: Generate update metadata
         run: |
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dev-mode-plugin.zip"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/dev-mode-plugin.zip"
 
           cat > details.json <<EOF
           {
@@ -64,12 +66,11 @@ jobs:
           }
           EOF
 
-      - name: Create GitHub Release
+      - name: Upload assets to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ github.ref_name }}" \
+          gh release upload "${{ github.event.release.tag_name }}" \
             dev-mode-plugin.zip \
             details.json \
-            --title "${{ github.ref_name }}" \
-            --generate-notes
+            --clobber
