@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer
+
+      - name: Install production dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Resolve and verify version
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          FILE_VERSION=$(grep -oP '^\s*\*\s*Version:\s*\K.+' dev-mode.php | tr -d '[:space:]')
+
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match dev-mode.php Version header ($FILE_VERSION)."
+            exit 1
+          fi
+
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build production zip
+        run: |
+          STAGE_DIR="$RUNNER_TEMP/dev-mode-plugin"
+          mkdir -p "$STAGE_DIR"
+
+          cp dev-mode.php "$STAGE_DIR/"
+          cp -r src assets vendor "$STAGE_DIR/"
+
+          (cd "$RUNNER_TEMP" && zip -r "$GITHUB_WORKSPACE/dev-mode-plugin.zip" dev-mode-plugin)
+
+      - name: Generate update metadata
+        run: |
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dev-mode-plugin.zip"
+
+          cat > details.json <<EOF
+          {
+            "name": "Dev Mode",
+            "version": "${{ steps.version.outputs.version }}",
+            "download_url": "$DOWNLOAD_URL",
+            "requires_php": "8.2",
+            "last_updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "sections": {
+              "description": "Dashboard widget with debug toggles, dev plugin controls, site snapshot, and environment detection."
+            }
+          }
+          EOF
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            dev-mode-plugin.zip \
+            details.json \
+            --title "${{ github.ref_name }}" \
+            --generate-notes
