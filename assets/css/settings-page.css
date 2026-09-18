@@ -1,0 +1,14 @@
+/**
+ * Dev Mode Settings Page Tab Styles
+ */
+
+.dev-mode-tabs {
+    margin-bottom: 0;
+}
+
+.dev-mode-tab-panel {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-top: none;
+    padding: 20px;
+}
