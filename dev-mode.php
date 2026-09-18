@@ -4,7 +4,7 @@
  * Plugin Name: Dev Mode
  * Plugin URI: https://www.pestcontrolexperts.com
  * Description: Dashboard widget with debug toggles, dev plugin controls, site snapshot, and environment detection
- * Version: 2.1.0
+ * Version: 2.1.1
  * Author: Josh Robbs
  * Requires PHP: 8.2
  * Text Domain: dev-mode
