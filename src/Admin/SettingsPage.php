@@ -27,6 +27,7 @@ class SettingsPage
     {
         add_action('admin_menu', [self::class, 'addMenuPage']);
         add_action('admin_init', [self::class, 'handleSave']);
+        add_action('admin_enqueue_scripts', [self::class, 'enqueueAssets']);
     }
 
     /**
@@ -42,6 +43,34 @@ class SettingsPage
             'manage_options',
             self::PAGE_SLUG,
             [self::class, 'renderPage']
+        );
+    }
+
+    /**
+     * Enqueue assets for the tabbed settings page layout
+     *
+     * @param string $hook The current admin page
+     * @return void
+     */
+    public static function enqueueAssets(string $hook): void
+    {
+        if ($hook !== self::$hookSuffix) {
+            return;
+        }
+
+        wp_enqueue_style(
+            'dev-mode-settings',
+            Constants::url() . 'assets/css/settings-page.css',
+            [],
+            Constants::VERSION
+        );
+
+        wp_enqueue_script(
+            'dev-mode-settings',
+            Constants::url() . 'assets/js/settings-page.js',
+            [],
+            Constants::VERSION,
+            true
         );
     }
 
@@ -137,59 +166,67 @@ class SettingsPage
                 </div>
             <?php endif; ?>
 
-            <p>Select which plugins to show in the Dev Mode dashboard widget.
-               These plugins will be available for quick toggle on/off from the dashboard.</p>
+            <h2 class="nav-tab-wrapper dev-mode-tabs">
+                <a href="#" class="nav-tab nav-tab-active" data-tab="settings">Settings</a>
+                <a href="#" class="nav-tab" data-tab="data">Data</a>
+            </h2>
 
-            <?php if ($isFirstVisit) : ?>
-                <div class="notice notice-info">
-                    <p><strong>First time setup:</strong> Common dev plugins have been pre-selected below.
-                       Adjust the selection and click Save to begin.</p>
-                </div>
-            <?php endif; ?>
+            <div class="dev-mode-tab-panel" data-tab-panel="settings">
+                <p>Select which plugins to show in the Dev Mode dashboard widget.
+                   These plugins will be available for quick toggle on/off from the dashboard.</p>
 
-            <h2>Dev Mode Widget</h2>
-            <?php DashboardWidget::renderWidget(); ?>
+                <?php if ($isFirstVisit) : ?>
+                    <div class="notice notice-info">
+                        <p><strong>First time setup:</strong> Common dev plugins have been pre-selected below.
+                           Adjust the selection and click Save to begin.</p>
+                    </div>
+                <?php endif; ?>
 
-            <form method="post">
-                <?php wp_nonce_field(self::NONCE_ACTION); ?>
+                <form method="post">
+                    <?php wp_nonce_field(self::NONCE_ACTION); ?>
 
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Watched Plugins</th>
-                        <td>
-                            <fieldset>
-                                <?php foreach ($allPlugins as $pluginFile => $pluginData) : ?>
-                                    <?php
-                                    // On first visit, pre-check default plugins
-                                    $isChecked = $isFirstVisit
-                                        ? in_array($pluginFile, Constants::DEFAULT_WATCHED_PLUGINS, true)
-                                        : in_array($pluginFile, $watchedPlugins, true);
-                                    ?>
-                                    <label style="display: block; margin-bottom: 8px;">
-                                        <input
-                                            type="checkbox"
-                                            name="watched_plugins[]"
-                                            value="<?php echo esc_attr($pluginFile); ?>"
-                                            <?php checked($isChecked); ?>
-                                        >
-                                        <?php echo esc_html($pluginData['Name']); ?>
-                                        <span style="color: #666;">
-                                            (<?php echo esc_html($pluginFile); ?>)
-                                        </span>
-                                    </label>
-                                <?php endforeach; ?>
-                            </fieldset>
-                        </td>
-                    </tr>
-                </table>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Watched Plugins</th>
+                            <td>
+                                <fieldset>
+                                    <?php foreach ($allPlugins as $pluginFile => $pluginData) : ?>
+                                        <?php
+                                        // On first visit, pre-check default plugins
+                                        $isChecked = $isFirstVisit
+                                            ? in_array($pluginFile, Constants::DEFAULT_WATCHED_PLUGINS, true)
+                                            : in_array($pluginFile, $watchedPlugins, true);
+                                        ?>
+                                        <label style="display: block; margin-bottom: 8px;">
+                                            <input
+                                                type="checkbox"
+                                                name="watched_plugins[]"
+                                                value="<?php echo esc_attr($pluginFile); ?>"
+                                                <?php checked($isChecked); ?>
+                                            >
+                                            <?php echo esc_html($pluginData['Name']); ?>
+                                            <span style="color: #666;">
+                                                (<?php echo esc_html($pluginFile); ?>)
+                                            </span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
 
-                <p class="submit">
-                    <input type="submit"
-                           name="dev_mode_save"
-                           class="button-primary"
-                           value="Save Settings">
-                </p>
-            </form>
+                    <p class="submit">
+                        <input type="submit"
+                               name="dev_mode_save"
+                               class="button-primary"
+                               value="Save Settings">
+                    </p>
+                </form>
+            </div>
+
+            <div class="dev-mode-tab-panel" data-tab-panel="data" hidden>
+                <?php DashboardWidget::renderWidget(); ?>
+            </div>
         </div>
         <?php
     }
